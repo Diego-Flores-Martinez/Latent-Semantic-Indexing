@@ -1,12 +1,15 @@
 package com.lsi.semantic;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-public class SemanticPipelineTest extends TestCase {
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-    public void testSynonymCanonicalization() {
+class SemanticPipelineTest {
+
+    @Test
+    void shouldCanonicalizeSynonyms() {
         SynonymExpander expander = new SynonymExpander();
 
         List<String> result = expander.expand(List.of(
@@ -24,7 +27,8 @@ public class SemanticPipelineTest extends TestCase {
         ), result);
     }
 
-    public void testPolysemyResolutionWithContextBeforeAmbiguousTerm() {
+    @Test
+    void shouldResolvePolysemyUsingContextBeforeAmbiguousTerm() {
         PolysemyResolver resolver = new PolysemyResolver();
 
         List<String> result = resolver.resolve(List.of(
@@ -43,7 +47,8 @@ public class SemanticPipelineTest extends TestCase {
         ), result);
     }
 
-    public void testUnknownTermsArePreserved() {
+    @Test
+    void shouldPreserveUnknownTerms() {
         SemanticPipeline pipeline = new SemanticPipeline();
 
         List<String> result = pipeline.process(List.of(
@@ -59,7 +64,8 @@ public class SemanticPipelineTest extends TestCase {
         ), result);
     }
 
-    public void testFullSemanticPipelineWithSynonymsAndPolysemy() {
+    @Test
+    void shouldRunFullSemanticPipelineWithSynonymsAndPolysemy() {
         SemanticPipeline pipeline = new SemanticPipeline();
 
         List<String> result = pipeline.process(List.of(
