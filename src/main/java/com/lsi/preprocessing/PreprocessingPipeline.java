@@ -1,8 +1,8 @@
 package com.lsi.preprocessing;
 
 /*
- * Aquí va la orquestación completa del preprocesamiento:
- * normalización, tokenización, filtrado y stemming.
+ * AquÃ­ va la orquestaciÃ³n completa del preprocesamiento:
+ * normalizaciÃ³n, tokenizaciÃ³n, filtrado y stemming.
  */
 public class PreprocessingPipeline {
 }

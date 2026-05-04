@@ -1,7 +1,7 @@
 package com.lsi.lsi;
 
 /*
- * Aquí va la lógica para reducir dimensionalidad y construir la representación LSI.
+ * AquÃ­ va la lÃ³gica para reducir dimensionalidad y construir la representaciÃ³n LSI.
  */
 public class LsiReducer {
 }

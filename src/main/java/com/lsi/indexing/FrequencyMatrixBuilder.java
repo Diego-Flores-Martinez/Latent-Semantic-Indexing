@@ -1,7 +1,7 @@
 package com.lsi.indexing;
 
 /*
- * Aquí va la construcción de la matriz de frecuencias término-documento (FrecT).
+ * AquÃ­ va la construcciÃ³n de la matriz de frecuencias tÃ©rmino-documento (FrecT).
  */
 public class FrequencyMatrixBuilder {
 }

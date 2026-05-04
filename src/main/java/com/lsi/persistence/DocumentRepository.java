@@ -1,7 +1,7 @@
 package com.lsi.persistence;
 
 /*
- * Aquí va el acceso a datos para documentos: inserción, consulta, actualización y carga.
+ * AquÃ­ va el acceso a datos para documentos: inserciÃ³n, consulta, actualizaciÃ³n y carga.
  */
 public class DocumentRepository {
 }

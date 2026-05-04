@@ -1,8 +1,8 @@
 package com.lsi.ui;
 
 /*
- * Aquí va la interfaz de línea de comandos del sistema:
- * menú principal, opciones de carga, indexación, consulta y comparación.
+ * AquÃ­ va la interfaz de lÃ­nea de comandos del sistema:
+ * menÃº principal, opciones de carga, indexaciÃ³n, consulta y comparaciÃ³n.
  */
 public class CommandLineInterface {
 }

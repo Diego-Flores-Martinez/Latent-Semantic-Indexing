@@ -1,7 +1,7 @@
 package com.lsi.preprocessing;
 
 /*
- * Aquí va la lógica de tokenización del texto normalizado.
+ * AquÃ­ va la lÃ³gica de tokenizaciÃ³n del texto normalizado.
  */
 public class Tokenizer {
 }

@@ -1,8 +1,8 @@
 package com.lsi.indexing;
 
 /*
- * AquÌ va el servicio principal de indexaciÛn cl·sica:
- * coordina vocabulario, frecuencias y persistencia de la representaciÛn base.
+ * Aqu√≠ va el servicio principal de indexaci√≥n cl√°sica:
+ * coordina vocabulario, frecuencias y persistencia de la representaci√≥n base.
  */
 public class IndexingService {
 }

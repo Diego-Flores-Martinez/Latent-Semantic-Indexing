@@ -1,7 +1,7 @@
 package com.lsi.query;
 
 /*
- * Aquí van las pruebas unitarias del ranking y recuperación de documentos.
+ * AquÃ­ van las pruebas unitarias del ranking y recuperaciÃ³n de documentos.
  */
 public class RankingServiceTest {
 }

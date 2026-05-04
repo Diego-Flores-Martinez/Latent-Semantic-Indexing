@@ -1,7 +1,7 @@
 package com.lsi.persistence;
 
 /*
- * Aquí va el acceso a datos para términos y vocabulario.
+ * AquÃ­ va el acceso a datos para tÃ©rminos y vocabulario.
  */
 public class TermRepository {
 }

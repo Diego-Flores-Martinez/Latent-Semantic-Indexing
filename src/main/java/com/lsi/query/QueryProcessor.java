@@ -1,7 +1,7 @@
 package com.lsi.query;
 
 /*
- * Aquí va la lógica para procesar una consulta Q y transformarla a la representación que usará el motor de búsqueda.
+ * AquÃ­ va la lÃ³gica para procesar una consulta Q y transformarla a la representaciÃ³n que usarÃ¡ el motor de bÃºsqueda.
  */
 public class QueryProcessor {
 }

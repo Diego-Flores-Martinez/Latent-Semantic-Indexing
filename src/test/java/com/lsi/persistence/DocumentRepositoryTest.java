@@ -1,7 +1,7 @@
 package com.lsi.persistence;
 
 /*
- * Aquí van las pruebas unitarias o de integración para persistencia de documentos.
+ * AquÃ­ van las pruebas unitarias o de integraciÃ³n para persistencia de documentos.
  */
 public class DocumentRepositoryTest {
 }

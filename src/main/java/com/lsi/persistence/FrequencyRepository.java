@@ -1,7 +1,7 @@
 package com.lsi.persistence;
 
 /*
- * Aquí va el acceso a datos para la matriz de frecuencias y relaciones documento-término.
+ * AquÃ­ va el acceso a datos para la matriz de frecuencias y relaciones documento-tÃ©rmino.
  */
 public class FrequencyRepository {
 }

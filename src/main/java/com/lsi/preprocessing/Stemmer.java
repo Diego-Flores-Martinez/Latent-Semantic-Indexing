@@ -1,7 +1,7 @@
 package com.lsi.preprocessing;
 
 /*
- * Aquí va la lógica de stemming o reducción a raíces usando reglas definidas para el proyecto.
+ * AquÃ­ va la lÃ³gica de stemming o reducciÃ³n a raÃ­ces usando reglas definidas para el proyecto.
  */
 public class Stemmer {
 }

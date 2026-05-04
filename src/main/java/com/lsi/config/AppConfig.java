@@ -1,8 +1,8 @@
 package com.lsi.config;
 
 /*
- * AquÌ va la configuraciÛn general del sistema:
- * rutas, par·metros de LSI, tamaÒo de top-n, archivos de recursos y constantes globales.
+ * Aqu√≠ va la configuraci√≥n general del sistema:
+ * rutas, par√°metros de LSI, tama√±o de top-n, archivos de recursos y constantes globales.
  */
 public class AppConfig {
 }

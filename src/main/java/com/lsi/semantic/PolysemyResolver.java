@@ -1,7 +1,7 @@
 package com.lsi.semantic;
 
 /*
- * AquÌ va la lÛgica b·sica para resolver polisemia con reglas contextuales controladas.
+ * Aqu√≠ va la l√≥gica b√°sica para resolver polisemia con reglas contextuales controladas.
  */
 public class PolysemyResolver {
 }

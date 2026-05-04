@@ -1,8 +1,8 @@
 package com.lsi.preprocessing;
 
 /*
- * Aquí va la lógica para limpiar y normalizar texto:
- * minúsculas, eliminación de caracteres no deseados, espacios y formato base.
+ * AquÃ­ va la lÃ³gica para limpiar y normalizar texto:
+ * minÃºsculas, eliminaciÃ³n de caracteres no deseados, espacios y formato base.
  */
 public class TextNormalizer {
 }
