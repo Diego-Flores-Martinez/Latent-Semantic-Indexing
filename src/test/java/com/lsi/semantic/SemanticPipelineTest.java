@@ -1,10 +1,9 @@
 package com.lsi.semantic;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 class SemanticPipelineTest {
 
@@ -87,4 +86,22 @@ class SemanticPipelineTest {
                 "institutional_support"
         ), result);
     }
+
+    @Test
+    void shouldMatchFixtureExpectedOutput() throws Exception {
+        SemanticPipeline pipeline = new SemanticPipeline();
+
+        String input = java.nio.file.Files.readString(
+                java.nio.file.Path.of("data/fixtures/semantics/input_tokens.txt")
+        ).trim();
+
+        String expected = java.nio.file.Files.readString(
+                java.nio.file.Path.of("data/fixtures/semantics/expected_semantic_terms.txt")
+        ).trim();
+
+        String result = pipeline.processText(input);
+
+        assertEquals(expected, result);
+        }
+
 }

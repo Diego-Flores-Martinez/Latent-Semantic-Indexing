@@ -1,9 +1,7 @@
 ambiguous_term,context_token,assigned_sense,priority
 support,university,institutional_support,10
-support,campus,institutional_support,9
-support,counseling,institutional_support,8
+support,counseling,institutional_support,9
 support,emotional,emotional_support,10
-support,family,emotional_support,8
 pressure,academic,academic_pressure,10
 pressure,blood,blood_pressure,10
 network,social,social_media,10

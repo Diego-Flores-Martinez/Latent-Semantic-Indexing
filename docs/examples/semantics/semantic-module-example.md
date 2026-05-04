@@ -19,3 +19,21 @@ university + support -> institutional_support
 ## Output
 
 student anxiety academic_pressure emotional_support institutional_support
+
+## Output contract for indexing
+
+The semantic module returns a `List<String>` containing canonical semantic terms.
+
+The indexing module can consume this list directly to build the global vocabulary and the FrecT matrix.
+
+Example Java output:
+
+```java
+List<String> semanticTerms = List.of(
+    "student",
+    "anxiety",
+    "academic_pressure",
+    "emotional_support",
+    "institutional_support"
+);
+
