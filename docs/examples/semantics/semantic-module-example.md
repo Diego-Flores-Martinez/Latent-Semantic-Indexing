@@ -1,39 +1,89 @@
 # Semantic Module Example
 
-This module receives preprocessed tokens and applies controlled semantic normalization.
+This document describes the expected behavior of the semantic module implemented for Dev 4.
 
-## Input
+The module receives normalized tokens from the preprocessing stage and produces semantic terms ready to be consumed by the indexing module.
 
-student worry academic pressure emotional support university support
+## Purpose
+
+The semantic module adds a controlled semantic layer before indexing. It does not use external NLP models. Instead, it relies on:
+
+- a controlled synonym dictionary;
+- simple context-based polysemy rules;
+- deterministic transformations;
+- traceable input and output examples.
+
+This keeps the module simple, testable, and easy to integrate with the rest of the LSI pipeline.
+
+## Corpus domain
+
+The current document collection is in English and focuses on college student mental health and wellbeing. Because of this, the semantic resources include terms related to:
+
+- stress;
+- anxiety;
+- depression;
+- burnout;
+- mental health;
+- wellbeing;
+- counseling;
+- campus support;
+- academic performance;
+- sleep quality;
+- social media;
+- help seeking.
 
 ## Synonym normalization
 
-worry -> anxiety
+The synonym dictionary maps equivalent or closely related terms to a canonical term.
+
+Examples:
+
+worry -> anxiety  
+nervousness -> anxiety  
+pressure -> stress  
+well-being -> wellbeing  
+counselling -> counseling  
+therapy -> counseling  
+exercise -> physical_activity  
+focus -> concentration  
+
+This helps the system avoid treating related terms as completely different words.
 
 ## Polysemy resolution
 
-academic + pressure -> academic_pressure  
-emotional + support -> emotional_support  
-university + support -> institutional_support
+Some words can have different meanings depending on their context. The module handles this using simple context rules.
 
-## Output
+Examples:
 
-student anxiety academic_pressure emotional_support institutional_support
+support + university -> institutional_support  
+support + emotional -> emotional_support  
+health + mental -> mental_health  
+stress + academic -> academic_stress  
+media + social -> social_media  
+sleep + quality -> sleep_quality  
 
-## Output contract for indexing
+The goal is not to solve every possible meaning. The goal is to show a controlled and explainable semantic treatment that satisfies the project requirement.
 
-The semantic module returns a `List<String>` containing canonical semantic terms.
+## Example input
 
-The indexing module can consume this list directly to build the global vocabulary and the FrecT matrix.
+student worry academic pressure emotional support university support mental health campus wellbeing counseling services sleep quality social media help seeking
 
-Example Java output:
+## Expected output
 
-```java
-List<String> semanticTerms = List.of(
-    "student",
-    "anxiety",
-    "academic_pressure",
-    "emotional_support",
-    "institutional_support"
-);
+student anxiety academic_pressure emotional_support institutional_support mental_health campus_wellbeing counseling_services sleep_quality social_media help_seeking
 
+## Integration contract
+
+Input expected from preprocessing:
+
+List<String> tokens
+
+Output expected for indexing:
+
+List<String> canonicalTerms
+
+The indexing module should consume the final semantic terms as the vocabulary source for frequency counting and FrecT construction.
+
+## Notes
+
+This module does not read documents directly. It does not calculate frequencies. It does not execute LSI or SVD. Its responsibility is only semantic normalization before indexing.
