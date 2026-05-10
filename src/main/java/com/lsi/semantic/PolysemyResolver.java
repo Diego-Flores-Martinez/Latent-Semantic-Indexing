@@ -5,248 +5,207 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
 /**
- * Resolves controlled polysemy using simple context rules.
+ * Resolves controlled polysemy using adjacent token rules.
  *
  * Example:
- * academic + pressure -> academic_pressure
- * emotional + support -> emotional_support
- * university + support -> institutional_support
+ * academic pressure -> academic_pressure
+ * emotional support -> emotional_support
+ * university support -> institutional_support
  */
 public class PolysemyResolver {
 
-    private static final String DEFAULT_RESOURCE = "/polysemy_rules.csv";
-    private static final int CONTEXT_WINDOW = 2;
+    private static final String DEFAULT_RESOURCE = "polysemy_rules.csv";
 
-    private final List<PolysemyRule> rules;
+    private final Map<String, String> rulesByPair;
 
     public PolysemyResolver() {
-        this(loadDefaultRules());
+        this.rulesByPair = loadRulesFromResource(DEFAULT_RESOURCE);
     }
 
-    public PolysemyResolver(List<PolysemyRule> rules) {
-        Objects.requireNonNull(rules, "rules cannot be null");
+    public PolysemyResolver(Map<String, String> rulesByPair) {
+        this.rulesByPair = new LinkedHashMap<>();
 
-        this.rules = new ArrayList<>(rules);
-        this.rules.sort(PolysemyResolver::compareRules);
+        if (rulesByPair != null) {
+            for (Map.Entry<String, String> entry : rulesByPair.entrySet()) {
+                addRuleFromFlexibleKey(entry.getKey(), entry.getValue());
+            }
+        }
+    }
+
+    public static PolysemyResolver fromResource(String resourceName) {
+        PolysemyResolver resolver = new PolysemyResolver(new LinkedHashMap<>());
+        resolver.rulesByPair.putAll(loadRulesFromResource(resourceName));
+        return resolver;
+    }
+
+    public static PolysemyResolver fromCsv(Path path) {
+        Objects.requireNonNull(path, "path cannot be null");
+
+        try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+            PolysemyResolver resolver = new PolysemyResolver(new LinkedHashMap<>());
+            resolver.rulesByPair.putAll(readRules(reader));
+            return resolver;
+        } catch (IOException exception) {
+            throw new IllegalStateException("Could not load polysemy rules from file: " + path, exception);
+        }
     }
 
     public List<String> resolve(List<String> tokens) {
         Objects.requireNonNull(tokens, "tokens cannot be null");
 
-        List<String> normalizedTokens = normalizeTokens(tokens);
-        List<String> result = new ArrayList<>();
+        List<String> resolved = new ArrayList<>();
 
-        int i = 0;
+        int index = 0;
+        while (index < tokens.size()) {
+            String current = normalizeToken(tokens.get(index));
 
-        while (i < normalizedTokens.size()) {
-            String current = normalizedTokens.get(i);
+            if (current.isBlank()) {
+                index++;
+                continue;
+            }
 
-            if (i + 1 < normalizedTokens.size()) {
-                String next = normalizedTokens.get(i + 1);
+            if (index + 1 < tokens.size()) {
+                String next = normalizeToken(tokens.get(index + 1));
+                String replacement = findReplacement(current, next);
 
-                PolysemyRule contextBefore = bestRuleForContextAndAmbiguous(current, next);
-
-                if (contextBefore != null) {
-                    result.add(contextBefore.assignedSense());
-                    i += 2;
-                    continue;
-                }
-
-                PolysemyRule contextAfter = bestRuleForContextAndAmbiguous(next, current);
-
-                if (contextAfter != null) {
-                    result.add(contextAfter.assignedSense());
-                    i += 2;
+                if (replacement != null) {
+                    resolved.add(replacement);
+                    index += 2;
                     continue;
                 }
             }
 
-            PolysemyRule localContextRule = bestRuleNearToken(current, normalizedTokens, i);
-
-            if (localContextRule != null) {
-                result.add(localContextRule.assignedSense());
-            } else {
-                result.add(current);
-            }
-
-            i++;
+            resolved.add(current);
+            index++;
         }
 
-        return result;
+        return resolved;
     }
 
-    public List<PolysemyRule> rules() {
-        return List.copyOf(rules);
+    public List<String> resolvePolysemy(List<String> tokens) {
+        return resolve(tokens);
     }
 
-    private PolysemyRule bestRuleForContextAndAmbiguous(String contextToken, String ambiguousTerm) {
-        return rules.stream()
-                .filter(rule -> rule.ambiguousTerm().equals(ambiguousTerm))
-                .filter(rule -> rule.contextToken().equals(contextToken))
-                .min(PolysemyResolver::compareRules)
-                .orElse(null);
+    public List<String> normalize(List<String> tokens) {
+        return resolve(tokens);
     }
 
-    private PolysemyRule bestRuleNearToken(String token, List<String> tokens, int index) {
-        List<PolysemyRule> candidates = new ArrayList<>();
+    public List<String> process(List<String> tokens) {
+        return resolve(tokens);
+    }
 
-        for (PolysemyRule rule : rules) {
-            if (!rule.ambiguousTerm().equals(token)) {
-                continue;
-            }
+    private String findReplacement(String left, String right) {
+        return rulesByPair.get(buildKey(left, right));
+    }
 
-            if (contextAppearsNear(tokens, index, rule.contextToken())) {
-                candidates.add(rule);
-            }
+    private void addRuleFromFlexibleKey(String key, String value) {
+        if (key == null || value == null) {
+            return;
         }
 
-        return candidates.stream()
-                .min(PolysemyResolver::compareRules)
-                .orElse(null);
-    }
+        String cleanKey = key.trim().toLowerCase();
+        String cleanValue = normalizeToken(value);
 
-    private boolean contextAppearsNear(List<String> tokens, int index, String contextToken) {
-        int start = Math.max(0, index - CONTEXT_WINDOW);
-        int end = Math.min(tokens.size() - 1, index + CONTEXT_WINDOW);
-
-        for (int i = start; i <= end; i++) {
-            if (i == index) {
-                continue;
-            }
-
-            if (tokens.get(i).equals(contextToken)) {
-                return true;
-            }
+        if (cleanKey.isBlank() || cleanValue.isBlank()) {
+            return;
         }
 
-        return false;
-    }
+        String[] parts;
 
-    private static List<String> normalizeTokens(List<String> tokens) {
-        List<String> normalized = new ArrayList<>();
-
-        for (String token : tokens) {
-            String value = normalize(token);
-
-            if (!value.isBlank()) {
-                normalized.add(value);
-            }
+        if (cleanKey.contains("|")) {
+            parts = cleanKey.split("\\|");
+        } else if (cleanKey.contains(",")) {
+            parts = cleanKey.split(",");
+        } else {
+            parts = cleanKey.split("\\s+");
         }
 
-        return normalized;
+        if (parts.length < 2) {
+            return;
+        }
+
+        addRule(parts[0], parts[1], cleanValue);
     }
 
-    private static List<PolysemyRule> loadDefaultRules() {
-        List<PolysemyRule> loadedRules = new ArrayList<>();
+    private static Map<String, String> loadRulesFromResource(String resourceName) {
+        String cleanName = resourceName.startsWith("/") ? resourceName.substring(1) : resourceName;
 
-        try (InputStream input = PolysemyResolver.class.getResourceAsStream(DEFAULT_RESOURCE)) {
-            if (input == null) {
-                return loadedRules;
+        try (InputStream inputStream = PolysemyResolver.class.getClassLoader().getResourceAsStream(cleanName)) {
+            if (inputStream == null) {
+                return new LinkedHashMap<>();
             }
 
             try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(input, StandardCharsets.UTF_8))) {
-
-                String line;
-
-                while ((line = reader.readLine()) != null) {
-                    line = line.trim();
-
-                    if (line.isBlank() || line.startsWith("#")) {
-                        continue;
-                    }
-
-                    if (line.equalsIgnoreCase("ambiguous_term,context_token,assigned_sense,priority")) {
-                        continue;
-                    }
-
-                    String[] parts = line.split(",", -1);
-
-                    if (parts.length < 4) {
-                        continue;
-                    }
-
-                    String ambiguousTerm = normalize(parts[0]);
-                    String contextToken = normalize(parts[1]);
-                    String assignedSense = normalize(parts[2]);
-                    int priority = parsePriority(parts[3]);
-
-                    if (!ambiguousTerm.isBlank()
-                            && !contextToken.isBlank()
-                            && !assignedSense.isBlank()) {
-                        loadedRules.add(new PolysemyRule(
-                                ambiguousTerm,
-                                contextToken,
-                                assignedSense,
-                                priority
-                        ));
-                    }
-                }
+                    new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+                return readRules(reader);
             }
-        } catch (IOException e) {
-            throw new IllegalStateException("Could not load polysemy_rules.csv", e);
-        }
-
-        return loadedRules;
-    }
-
-    private static int parsePriority(String value) {
-        try {
-            return Integer.parseInt(value.trim());
-        } catch (NumberFormatException e) {
-            return 0;
+        } catch (IOException exception) {
+            throw new IllegalStateException("Could not load polysemy rules from resource: " + resourceName, exception);
         }
     }
 
-    private static int compareRules(PolysemyRule a, PolysemyRule b) {
-        int byPriority = Integer.compare(b.priority(), a.priority());
+    private static Map<String, String> readRules(BufferedReader reader) throws IOException {
+        Map<String, String> rules = new LinkedHashMap<>();
+        String line;
 
-        if (byPriority != 0) {
-            return byPriority;
+        while ((line = reader.readLine()) != null) {
+            String cleanLine = line.trim();
+
+            if (cleanLine.isBlank() || cleanLine.startsWith("#")) {
+                continue;
+            }
+
+            String[] parts = cleanLine.split(",");
+
+            if (parts.length < 3) {
+                continue;
+            }
+
+            String firstToken = normalizeToken(parts[0]);
+            String secondToken = normalizeToken(parts[1]);
+            String resolvedTerm = normalizeToken(parts[2]);
+
+            if (firstToken.isBlank() || secondToken.isBlank() || resolvedTerm.isBlank()) {
+                continue;
+            }
+
+            rules.put(buildKey(firstToken, secondToken), resolvedTerm);
+            rules.put(buildKey(secondToken, firstToken), resolvedTerm);
         }
 
-        int bySense = a.assignedSense().compareTo(b.assignedSense());
-
-        if (bySense != 0) {
-            return bySense;
-        }
-
-        return a.contextToken().compareTo(b.contextToken());
+        return rules;
     }
 
-    private static String normalize(String value) {
-        if (value == null) {
+    private static void addRuleToMap(Map<String, String> map, String left, String right, String resolved) {
+        map.put(buildKey(left, right), resolved);
+        map.put(buildKey(right, left), resolved);
+    }
+
+    private void addRule(String left, String right, String resolved) {
+        addRuleToMap(this.rulesByPair, left, right, resolved);
+    }
+
+    private static String buildKey(String left, String right) {
+        return normalizeToken(left) + "|" + normalizeToken(right);
+    }
+
+    private static String normalizeToken(String token) {
+        if (token == null) {
             return "";
         }
 
-        return value
-                .trim()
-                .toLowerCase(Locale.ROOT)
-                .replaceAll("\\s+", "_");
-    }
-
-    public record PolysemyRule(
-            String ambiguousTerm,
-            String contextToken,
-            String assignedSense,
-            int priority
-    ) {
-        public Map<String, String> asMap() {
-            Map<String, String> map = new LinkedHashMap<>();
-            map.put("ambiguousTerm", ambiguousTerm);
-            map.put("contextToken", contextToken);
-            map.put("assignedSense", assignedSense);
-            map.put("priority", String.valueOf(priority));
-            return map;
-        }
+        return token.trim()
+                .toLowerCase()
+                .replace("-", "_")
+                .replace(" ", "_");
     }
 }
